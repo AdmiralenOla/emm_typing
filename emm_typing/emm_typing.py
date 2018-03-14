@@ -38,29 +38,35 @@ def ChooseBestMatch(lines):
     # Pident = 100.0
     # For multiple bests, report in list
     matches = []
+    unvalmatches = []
     for row in lines:
         contig = row[0]
         allele = row[1]
         pident = row[2]
         length = row[3]
         if allele.startswith("EMM"):
-            alleleclean = re.match("^EMM(\d+)\.\d+$", allele).group(1)
+            alleleclean = re.match("^EMMG?(\d+)\.\d+$", allele).group(1)
             if not int(alleleclean) <= 124:
                 # NOT a verified type
                 if pident == "100.000" and length == "180":
-                    matches.append([contig, allele, pident, length])
+                    unvalmatches.append([contig, allele, pident, length])
             else:
                 if pident == "100.000" and length == "180":
                     newbest = [contig, allele, pident, length]
-                    matches.insert(0, newbest)
+                    #matches.insert(0, newbest)
+                    if len(matches) == 0:
+                        # If no matches so far
+                        matches.append(newbest)
+                    else:
+                        unvalmatches.append(newbest)
         else:
             if pident == "100.000" and length == "180":
                 matches.append([contig, allele, pident, length])
 
-    if len(matches) > 0:
-        return matches[0]
+    if len(matches) > 0 or len(unvalmatches) > 0:
+        return matches, unvalmatches
     else:
-        return None
+        return None, None
 
 def main():
     args = EmmArgumentParser()
@@ -74,7 +80,7 @@ def main():
 
     # Sequentially BLAST all fastas against database
     for fasta in args.fastafile:
-        isolatename = re.match("^([\w_\-]+)\.(fasta|fa)$", fasta).group(1)
+        isolatename = re.match("^([\w_\-]+)\.(fasta|fa)$", os.path.basename(fasta)).group(1)
         try:
             assert isolatename
         except:
@@ -85,19 +91,23 @@ def main():
 
     # Write all results to communal file (or alternatively, to stdout)
     with open(args.outfile,'w') as communalfile:
-        header = ["Isolate", "contig", "emm-type", "pident", "length"]
+        header = ["Isolate", "contig", "emm-type", "pident", "length", "unvalidatedmatches"]
         communal = csv.writer(communalfile, delimiter="\t")
         communal.writerow(header)
         #communal.write("\t".join(header) + "\n")
         for fasta in args.fastafile:
-            isolatename = re.match("^([\w_\-]+)\.(fasta|fa)$", fasta).group(1)
+            isolatename = re.match("^([\w_\-]+)\.(fasta|fa)$", os.path.basename(fasta)).group(1)
             resfile = "emm_typing/%s_emmresults" % isolatename
             with open(resfile, 'rU') as individual:
                 ilines = csv.reader(individual, delimiter="\t")
-                bestmatch = ChooseBestMatch(ilines)
-                if bestmatch is not None:
+                matches, unvalmatches = ChooseBestMatch(ilines)
+                if unvalmatches is not None:
+                    unvalidatedmatches = [",".join([u[1] for u in unvalmatches])]
+                else:
+                    unvalidatedmatches = []
+                if matches is not None:
                     #isolate = re.match("^emm_typing/(.*)_emmresults",isolatename).group(1)
-                    communal.writerow([isolatename] + bestmatch)
+                    communal.writerow([isolatename] + matches[0] + unvalidatedmatches)
 
 
 if __name__ == '__main__':
