@@ -9,7 +9,7 @@ import argparse
 import csv
 from pkg_resources import resource_filename
 from subprocess import call
-from __init__ import __version__
+from .__init__ import __version__
 from Bio.Blast.Applications import NcbiblastnCommandline
 
 EMM_VERSION = __version__
