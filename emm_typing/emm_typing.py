@@ -17,19 +17,23 @@ EMM_VERSION = __version__
 def EmmArgumentParser():
     parser = argparse.ArgumentParser(
         description = 'Group A streptococci emm-typer, version %s' % EMM_VERSION)
-    parser.add_argument('fastafile',
-        help='FASTA file to type.',nargs='+', default=None)
+    parser.add_argument('-f', '--fasta',
+        help='FASTA file to type.',nargs='+', required=True, type=argparse.FileType('r'))
     parser.add_argument('--db',
         help='Database for trimmed emm types. (If using non-default)',
         default=os.path.join(resource_filename(__name__,'data/trimmed_emm_types.tfa')))
-    parser.add_argument('-o', '--outfile',
-        help='Output file to write all results to.',
-        default='./emm_typing/emm_results.txt')
+    parser.add_argument('-o', '--outdir',
+        help='Output directory where to write all results.',
+        default='.')
     parser.add_argument('-v', '--version',
         help='Show version and exit.',
         action='version',
         version=EMM_VERSION)
     args = parser.parse_args()
+
+    args.fasta = [os.path.abspath(fasta.name) for fasta in args.fasta]
+    args.outdir = os.path.abspath(args.outdir)
+
     return args
 
 def ChooseBestMatch(lines):
@@ -79,13 +83,19 @@ def main():
         os.mkdir("emm_typing")
 
     # Sequentially BLAST all fastas against database
-    for fasta in args.fastafile:
-        isolatename = re.match("^([\w_\-]+)\.(fasta|fa)$", os.path.basename(fasta)).group(1)
+    for fasta in args.fasta:
         try:
-            assert isolatename
-        except:
+            isolatename = re.match("^([\w_\-]+)\.(fasta|fa)$", os.path.basename(fasta)).group(1)
+        except AttributeError as e:
+            print(e)
             sys.exit("Could not understand isolatename: %s. Only a-z, A-Z, numbers, dash and underscore is allowed")
-        blastn_cline = NcbiblastnCommandline(query=fasta, db=args.db, perc_identity=100, outfmt=6, max_target_seqs=10, out='./emm_typing/%s_emmresults' % isolatename)
+        else:
+            assert isolatename
+
+        blastn_cline = NcbiblastnCommandline(query=fasta, db=args.db, perc_identity=100, outfmt=6, max_target_seqs=10,
+                                             out=os.path.join(args.outdir,
+                                                              'emm_typing',
+                                                              '{}_emmresults'.format(isolatename)))
         print(blastn_cline)
         call(blastn_cline(), shell=True)
 
@@ -95,9 +105,9 @@ def main():
         communal = csv.writer(communalfile, delimiter="\t")
         communal.writerow(header)
         #communal.write("\t".join(header) + "\n")
-        for fasta in args.fastafile:
+        for fasta in args.fasta:
             isolatename = re.match("^([\w_\-]+)\.(fasta|fa)$", os.path.basename(fasta)).group(1)
-            resfile = "emm_typing/%s_emmresults" % isolatename
+            resfile = os.path.join(args.outdir, 'emm_typing', '{}_emmresults'.format(isolatename))
             with open(resfile, 'rU') as individual:
                 ilines = csv.reader(individual, delimiter="\t")
                 matches, unvalmatches = ChooseBestMatch(ilines)
