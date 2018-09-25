@@ -33,6 +33,8 @@ def EmmArgumentParser():
 
     args.fasta = [os.path.abspath(fasta.name) for fasta in args.fasta]
     args.outdir = os.path.abspath(args.outdir)
+    if not os.path.isdir(args.outdir):
+        os.makedirs(args.outdir)
 
     return args
 
@@ -46,16 +48,16 @@ def ChooseBestMatch(lines):
     for row in lines:
         contig = row[0]
         allele = row[1]
-        pident = row[2]
-        length = row[3]
+        pident = float(row[2])
+        length = int(row[3])
         if allele.startswith("EMM"):
             alleleclean = re.match("^EMMG?(\d+)\.\d+$", allele).group(1)
             if not int(alleleclean) <= 124:
                 # NOT a verified type
-                if pident == "100.000" and length == "180":
+                if pident == 100 and length >= 180:
                     unvalmatches.append([contig, allele, pident, length])
             else:
-                if pident == "100.000" and length == "180":
+                if pident == 100 and length >= 180:
                     newbest = [contig, allele, pident, length]
                     #matches.insert(0, newbest)
                     if len(matches) == 0:
@@ -64,13 +66,14 @@ def ChooseBestMatch(lines):
                     else:
                         unvalmatches.append(newbest)
         else:
-            if pident == "100.000" and length == "180":
+            if pident == 100 and length >= 180:
                 matches.append([contig, allele, pident, length])
 
     if len(matches) > 0 or len(unvalmatches) > 0:
         return matches, unvalmatches
     else:
         return None, None
+
 
 def main():
     args = EmmArgumentParser()
@@ -94,8 +97,7 @@ def main():
 
         blastn_cline = NcbiblastnCommandline(query=fasta, db=args.db, perc_identity=100, outfmt=6, max_target_seqs=10,
                                              out=os.path.join(args.outdir,
-                                                              'emm_typing',
-                                                              '{}_emmresults'.format(isolatename)))
+                                                              '{}_emmresults_blast.tab'.format(isolatename)))
         print(blastn_cline)
         call(blastn_cline(), shell=True)
 
@@ -107,7 +109,7 @@ def main():
         #communal.write("\t".join(header) + "\n")
         for fasta in args.fasta:
             isolatename = re.match("^([\w_\-]+)\.(fasta|fa)$", os.path.basename(fasta)).group(1)
-            resfile = os.path.join(args.outdir, 'emm_typing', '{}_emmresults'.format(isolatename))
+            resfile = os.path.join(args.outdir, '{}_emmresults_blast.tab'.format(isolatename))
             with open(resfile, 'rU') as individual:
                 ilines = csv.reader(individual, delimiter="\t")
                 matches, unvalmatches = ChooseBestMatch(ilines)
