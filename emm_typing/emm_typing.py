@@ -102,7 +102,7 @@ def main():
         call(blastn_cline(), shell=True)
 
     # Write all results to communal file (or alternatively, to stdout)
-    with open(args.outfile,'w') as communalfile:
+    with open(os.path.join(args.outdir, 'emmresults.tab'),'w') as communalfile:
         header = ["Isolate", "contig", "emm-type", "pident", "length", "unvalidatedmatches"]
         communal = csv.writer(communalfile, delimiter="\t")
         communal.writerow(header)
