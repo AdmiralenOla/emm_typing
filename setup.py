@@ -1,13 +1,11 @@
-from setuptools import setup
-from distutils.util import convert_path
+import emm_typing
 
-versionholder = {}
-ver_path = convert_path('emm_typing/__init__.py')
-with open(ver_path) as init_file:
-    exec(init_file.read(), versionholder)
+from setuptools import setup
+
+VERSION = emm_typing.__version__
 
 setup(name='emm_typing',
-      version=versionholder['__version__'],
+      version='{}'.format(VERSION),
       description='Typing of the emm gene of Streptococcus pyogenes (and other Streptococci)',
       classifiers=[
           'Development Status :: 3 - Alpha',

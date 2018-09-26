@@ -1,6 +1,4 @@
-#!/usr/bin/env python
-
-# emm-typing
+#!/usr/bin/env python3
 
 import os
 import sys
@@ -9,7 +7,10 @@ import argparse
 import csv
 from pkg_resources import resource_filename
 from subprocess import call
-from .__init__ import __version__
+try:
+    from __init__ import __version__
+except ImportError:
+    from emm_typing import __version__
 from Bio.Blast.Applications import NcbiblastnCommandline
 
 EMM_VERSION = __version__
@@ -37,7 +38,18 @@ def EmmArgumentParser():
         os.makedirs(args.outdir)
     args.db = os.path.abspath(args.db)
 
+    print(__name__)
+    print(resource_filename(__name__))
+    print(os.path.isfile(__name__))
+    print(resource_filename(__name__,'data/trimmed_emm_types.tfa'))
+    print(resource_filename(__name__, 'data/trimmed_emm_types.tfa'))
+    print(os.path.join(resource_filename(__name__,), 'data', 'trimmed_emm_types.tfa'))
+    print(os.path.isfile(os.path.join(resource_filename(__name__,), 'data', 'trimmed_emm_types.tfa')))
+    print(args.db)
+    print(os.path.abspath(os.path.join(resource_filename(__name__,), 'data', 'trimmed_emm_types.tfa')))
+
     return args
+
 
 def ChooseBestMatch(lines):
     # Verify EMM <= 124
