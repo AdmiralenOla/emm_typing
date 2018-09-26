@@ -12,6 +12,7 @@ try:
     from __init__ import __version__
 except ImportError:
     from emm_typing import __version__
+
 from Bio.Blast.Applications import NcbiblastnCommandline
 
 EMM_VERSION = __version__
@@ -47,7 +48,10 @@ def EmmArgumentParser():
                  pkg_resources.resource_exists(__name__, os.path.join('data', f)) and
                  f.startswith(os.path.basename(args.db))]
         for file_found in files:
-            os.symlink(pkg_resources.resource_filename(__name__, os.path.join('data', file_found)),
+            if os.path.islink(os.path.join(args.outdir, file_found)):
+                os.remove(os.path.join(args.outdir, file_found))
+            print(os.path.isfile(os.path.abspath(pkg_resources.resource_filename(__name__, os.path.join('data', file_found)))))
+            os.symlink(os.path.abspath(pkg_resources.resource_filename(__name__, os.path.join('data', file_found))),
                        os.path.join(args.outdir, file_found))
         args.db = os.path.join(args.outdir, 'trimmed_emm_types.tfa')
 
