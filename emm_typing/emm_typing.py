@@ -22,7 +22,7 @@ def EmmArgumentParser():
         help='FASTA file to type.',nargs='+', required=True, type=argparse.FileType('r'))
     parser.add_argument('--db',
         help='Database for trimmed emm types. (If using non-default)',
-        default=os.path.join(resource_filename(__name__,'data/trimmed_emm_types.tfa')))
+        default=os.path.join(resource_filename(__name__, 'data/trimmed_emm_types.tfa')))
     parser.add_argument('-o', '--outdir',
         help='Output directory where to write all results.',
         default='.')
@@ -39,14 +39,23 @@ def EmmArgumentParser():
     args.db = os.path.abspath(args.db)
 
     print(__name__)
-    print(resource_filename(__name__))
+    # print(resource_filename(__name__))
     print(os.path.isfile(__name__))
     print(resource_filename(__name__,'data/trimmed_emm_types.tfa'))
     print(resource_filename(__name__, 'data/trimmed_emm_types.tfa'))
-    print(os.path.join(resource_filename(__name__,), 'data', 'trimmed_emm_types.tfa'))
-    print(os.path.isfile(os.path.join(resource_filename(__name__,), 'data', 'trimmed_emm_types.tfa')))
+    print(os.path.isfile(resource_filename(__name__, 'data/trimmed_emm_types.tfa')))
+    print(os.path.isfile(os.path.join(resource_filename(__name__, 'data/trimmed_emm_types.tfa'))))
+    # print(os.path.join(resource_filename(__name__,), 'data', 'trimmed_emm_types.tfa'))
+    # print(os.path.isfile(os.path.join(resource_filename(__name__,), 'data', 'trimmed_emm_types.tfa')))
     print(args.db)
-    print(os.path.abspath(os.path.join(resource_filename(__name__,), 'data', 'trimmed_emm_types.tfa')))
+    print(os.listdir(os.path.join(resource_filename(__name__, 'data/'))))
+    print(os.listdir(resource_filename(__name__, 'data/')))
+    # print(os.path.abspath(os.path.join(resource_filename(__name__,), 'data', 'trimmed_emm_types.tfa')))
+    print(os.path.realpath(__file__))
+    print(os.path.abspath(__file__))
+    print(sys.argv[0])
+    print(os.path.abspath(sys.argv[0]))
+    print(os.path.realpath(sys.argv[0]))
 
     return args
 
