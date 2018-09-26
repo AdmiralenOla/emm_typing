@@ -96,15 +96,27 @@ def main():
         else:
             assert isolatename
 
-        # Create symbolic link to outdir
-        db_link = os.path.join(args.outdir, os.path.basename(args.db))
-        os.symlink(args.db, db_link)
-        blastn_cline = NcbiblastnCommandline(query=fasta, db=db_link, perc_identity=100, outfmt=6, max_target_seqs=10,
+        # Create DB symbolic link to outdir (avoid permission problems)
+        files = [f for f in os.listdir(os.path.dirname(args.db)) if
+                 not f.startswith('.') and os.path.isfile(os.path.join(os.path.dirname(args.db), f)) and
+                 f.startswith(os.path.basename(args.db))]
+        for file_found in files:
+            os.symlink(os.path.join(os.path.dirname(args.db), file_found),
+                       os.path.join(args.outdir, file_found))
+
+        blastn_cline = NcbiblastnCommandline(query=fasta, db=os.path.join(args.outdir, os.path.basename(args.db)),
+                                             perc_identity=100, outfmt=6, max_target_seqs=10,
                                              out=os.path.join(args.outdir,
                                                               '{}_emmresults_blast.tab'.format(isolatename)))
         print(blastn_cline)
         call(blastn_cline(), shell=True)
-        os.remove(db_link)
+
+        # Remove DB symbolic link
+        files = [f for f in os.listdir(args.outdir) if
+                 not f.startswith('.') and os.path.isfile(os.path.join(args.outdir, f)) and
+                 f.startswith(os.path.basename(args.db))]
+        for file_found in files:
+            os.remove(os.path.join(args.outdir, file_found))
 
     # Write all results to communal file (or alternatively, to stdout)
     with open(os.path.join(args.outdir, 'emmresults.tab'),'w') as communalfile:
