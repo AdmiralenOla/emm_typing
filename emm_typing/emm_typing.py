@@ -35,6 +35,7 @@ def EmmArgumentParser():
     args.outdir = os.path.abspath(args.outdir)
     if not os.path.isdir(args.outdir):
         os.makedirs(args.outdir)
+    args.db = os.path.abspath(args.db)
 
     return args
 
@@ -95,11 +96,15 @@ def main():
         else:
             assert isolatename
 
-        blastn_cline = NcbiblastnCommandline(query=fasta, db=args.db, perc_identity=100, outfmt=6, max_target_seqs=10,
+        # Create symbolic link to outdir
+        db_link = os.path.join(args.outdir, os.path.basename(args.db))
+        os.symlink(args.db, db_link)
+        blastn_cline = NcbiblastnCommandline(query=fasta, db=db_link, perc_identity=100, outfmt=6, max_target_seqs=10,
                                              out=os.path.join(args.outdir,
                                                               '{}_emmresults_blast.tab'.format(isolatename)))
         print(blastn_cline)
         call(blastn_cline(), shell=True)
+        os.remove(db_link)
 
     # Write all results to communal file (or alternatively, to stdout)
     with open(os.path.join(args.outdir, 'emmresults.tab'),'w') as communalfile:
