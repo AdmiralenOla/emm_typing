@@ -27,5 +27,6 @@ setup(name='emm_typing',
       entry_points={
           'console_scripts': ['emm_typing = emm_typing.emm_typing:main']
       },
+      package_dir={'emm_typing': 'emm_typing'},
       package_data={'emm_typing': ['data/*']}
       )
