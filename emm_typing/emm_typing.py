@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python3 -W ignore
 
 import os
 import sys
@@ -105,17 +105,27 @@ def main():
                 os.remove(os.path.join(args.outdir, file_found))
             os.symlink(os.path.abspath(pkg_resources.resource_filename(__name__, os.path.join('data', file_found))),
                        os.path.join(args.outdir, file_found))
+            print('==>', file_found, '\n',
+                  os.path.abspath(pkg_resources.resource_filename(__name__, os.path.join('data', file_found))), '\n',
+                  os.path.isfile(os.path.abspath(pkg_resources.resource_filename(__name__, os.path.join('data', file_found)))), '\n',
+                  os.path.join(args.outdir, file_found), '\n',
+                  os.path.isfile(os.path.join(args.outdir, file_found)), '\n',
+                  os.path.islink(os.path.join(args.outdir, file_found)))
         args.db = os.path.join(args.outdir, 'trimmed_emm_types.tfa')
+
+    # Test isolate names
+    for fasta in args.fasta:
+        try:
+            _ = re.match("^([\w_\-]+)\.(fasta|fa)$", os.path.basename(fasta)).group(1)
+        except AttributeError as e:
+            print(e)
+            sys.exit("Could not understand isolatename for {} file.\n"
+                     "Only a-z, A-Z, numbers, dash and underscore is allowed".format(os.path.basename(fasta)))
 
     # Sequentially BLAST all fastas against database
     for fasta in args.fasta:
-        try:
-            isolatename = re.match("^([\w_\-]+)\.(fasta|fa)$", os.path.basename(fasta)).group(1)
-        except AttributeError as e:
-            print(e)
-            sys.exit("Could not understand isolatename: %s. Only a-z, A-Z, numbers, dash and underscore is allowed")
-        else:
-            assert isolatename
+        isolatename = re.match("^([\w_\-]+)\.(fasta|fa)$", os.path.basename(fasta)).group(1)
+        assert isolatename
 
         blastn_cline = NcbiblastnCommandline(query=fasta, db=os.path.join(args.outdir, os.path.basename(args.db)),
                                              perc_identity=100, outfmt=6, max_target_seqs=10,
