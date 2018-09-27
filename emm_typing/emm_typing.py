@@ -124,6 +124,8 @@ def choose_best_match(lines):
 
 
 def main():
+    print('===> RUNNING: {}'.format(os.path.realpath(__file__)))
+
     args = emm_argument_parser()
 
     # Test isolate names
