@@ -125,8 +125,7 @@ def main():
         isolatename = re.match("^([\w_\-]+)\.(fasta|fa)$", os.path.basename(fasta)).group(1)
         assert isolatename
 
-        blastn_cline = NcbiblastnCommandline(query=fasta, db=os.path.join(args.outdir, os.path.basename(args.db)),
-                                             perc_identity=100, outfmt=6, max_target_seqs=10,
+        blastn_cline = NcbiblastnCommandline(query=fasta, db=args.db, perc_identity=100, outfmt=6, max_target_seqs=10,
                                              out=os.path.join(args.outdir,
                                                               'emm_typing_blast',
                                                               '{}_emm_results_blast.tab'.format(isolatename)))
