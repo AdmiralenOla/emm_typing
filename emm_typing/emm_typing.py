@@ -76,6 +76,12 @@ def emm_argument_parser():
     print(args.db)
     print(os.listdir(os.path.join(pkg_resources.resource_filename(__name__, 'data/'))))
     print(os.listdir(pkg_resources.resource_filename(__name__, 'data/')))
+    # print(os.path.abspath(os.path.join(resource_filename(__name__,), 'data', 'trimmed_emm_types.tfa')))
+    print(os.path.realpath(__file__))
+    print(os.path.abspath(__file__))
+    print(sys.argv[0])
+    print(os.path.abspath(sys.argv[0]))
+    print(os.path.realpath(sys.argv[0]))
 
     return args
 
