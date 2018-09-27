@@ -23,8 +23,10 @@ def emm_argument_parser():
         description='Group A streptococci emm-typer, version %s' % EMM_VERSION)
     parser.add_argument('-f', '--fasta',
                         help='FASTA file to type.', nargs='+', required=True, type=argparse.FileType('r'))
-    parser.add_argument('--db', type=argparse.FileType('r'), required=False,
-                        help='Database for trimmed emm types. (If using non-default). It must be blastn database')
+    parser.add_argument('--db', type=str, required=False,
+                        help='Database for trimmed emm types. (If using non-default). It must be blastn database. Only'
+                             ' provide the file that do not end with ".n*" something (do not use for example'
+                             ' /blast_db.sequences.fasta.nhr)')
     parser.add_argument('-o', '--outdir', type=str,
                         help='Output directory where to write all results.',
                         default='.')
@@ -86,6 +88,8 @@ def main():
     # Create DB symbolic link to outdir (avoid permission problems)
     if args.db is not None:
         args.db = os.path.abspath(args.db)
+        if not os.path.isfile(args.db):
+            sys.exit('Blast DB was not found')
         files = [f for f in os.listdir(os.path.dirname(args.db)) if
                  not f.startswith('.') and os.path.isfile(os.path.join(os.path.dirname(args.db), f)) and
                  f.startswith(os.path.basename(args.db))]
