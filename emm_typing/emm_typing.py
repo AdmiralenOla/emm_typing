@@ -132,12 +132,12 @@ def main():
         print(blastn_cline)
         call(blastn_cline(), shell=True)
 
-    # Remove DB symbolic link
-    files = [f for f in os.listdir(args.outdir) if
-             not f.startswith('.') and os.path.islink(os.path.join(args.outdir, f)) and
+    # Remove DB symbolic links
+    files = [f for f in os.listdir(os.path.join(args.outdir, 'emm_typing_blast', '')) if
+             not f.startswith('.') and os.path.islink(os.path.join(args.outdir, 'emm_typing_blast', f)) and
              f.startswith(os.path.basename(args.db))]
     for file_found in files:
-        os.remove(os.path.join(args.outdir, file_found))
+        os.remove(os.path.join(args.outdir, 'emm_typing_blast', file_found))
 
     # Write all results to communal file (or alternatively, to stdout)
     with open(os.path.join(args.outdir, 'emm_results.tab'), 'w') as communalfile:
