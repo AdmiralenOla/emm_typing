@@ -62,7 +62,7 @@ def emm_argument_parser():
         for file_found in files:
             if os.path.islink(os.path.join(args.outdir, file_found)):
                 os.remove(os.path.join(args.outdir, file_found))
-            # print(os.path.isfile(os.path.abspath(pkg_resources.resource_filename(__name__, os.path.join('data', file_found)))))
+            print(os.path.isfile(os.path.abspath(pkg_resources.resource_filename(__name__, os.path.join('data', file_found)))))
             os.symlink(os.path.abspath(pkg_resources.resource_filename(__name__, os.path.join('data', file_found))),
                        os.path.join(args.outdir, file_found))
         args.db = os.path.join(args.outdir, 'trimmed_emm_types.tfa')
