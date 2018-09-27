@@ -86,6 +86,7 @@ def main():
         os.makedirs(args.outdir)
 
     # Create DB symbolic link to outdir (avoid permission problems)
+    print('==>', args.db)
     if args.db is not None:
         args.db = os.path.abspath(args.db)
         if not os.path.isfile(args.db):
