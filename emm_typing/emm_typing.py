@@ -23,11 +23,11 @@ def emm_argument_parser():
         description='Group A streptococci emm-typer, version %s' % EMM_VERSION)
     parser.add_argument('-f', '--fasta',
                         help='FASTA file to type.', nargs='+', required=True, type=argparse.FileType('r'))
-    parser.add_argument('--db', type=str, required=False,
+    parser.add_argument('--db',
                         help='Database for trimmed emm types. (If using non-default). It must be blastn database. Only'
                              ' provide the file that do not end with ".n*" something (do not use for example'
-                             ' /blast_db.sequences.fasta.nhr)')
-    parser.add_argument('-o', '--outdir', type=str,
+                             ' /blast_db.sequences.fasta.nhr)', required=False)
+    parser.add_argument('-o', '--outdir',
                         help='Output directory where to write all results.',
                         default='.')
     parser.add_argument('-v', '--version',
@@ -35,6 +35,56 @@ def emm_argument_parser():
                         action='version',
                         version=EMM_VERSION)
     args = parser.parse_args()
+
+    args.fasta = [os.path.abspath(fasta.name) for fasta in args.fasta]
+    args.outdir = os.path.abspath(args.outdir)
+    if not os.path.isdir(args.outdir):
+        os.makedirs(args.outdir)
+    if args.db is not None:
+        args.db = os.path.abspath(args.db)
+        if not os.path.isfile(args.db):
+            sys.exit('Blast DB was not found')
+        files = [f for f in os.listdir(os.path.dirname(args.db)) if
+                 not f.startswith('.') and os.path.isfile(os.path.join(os.path.dirname(args.db), f)) and
+                 f.startswith(os.path.basename(args.db))]
+        for file_found in files:
+            if os.path.islink(os.path.join(args.outdir, file_found)):
+                os.remove(os.path.join(args.outdir, file_found))
+            os.symlink(os.path.join(os.path.dirname(args.db), file_found),
+                       os.path.join(args.outdir, file_found))
+    else:
+        # Create DB symbolic link to outdir (avoid permission problems)
+        args.db = pkg_resources.resource_filename(__name__, os.path.join('data', 'trimmed_emm_types.tfa'))
+        files = [f for f in pkg_resources.resource_listdir(__name__, os.path.join('data', '')) if
+                 not f.startswith('.') and
+                 pkg_resources.resource_exists(__name__, os.path.join('data', f)) and
+                 f.startswith(os.path.basename(args.db))]
+        for file_found in files:
+            if os.path.islink(os.path.join(args.outdir, file_found)):
+                os.remove(os.path.join(args.outdir, file_found))
+            print(os.path.isfile(os.path.abspath(pkg_resources.resource_filename(__name__, os.path.join('data', file_found)))))
+            os.symlink(os.path.abspath(pkg_resources.resource_filename(__name__, os.path.join('data', file_found))),
+                       os.path.join(args.outdir, file_found))
+        args.db = os.path.join(args.outdir, 'trimmed_emm_types.tfa')
+
+    print(__name__)
+    # print(resource_filename(__name__))
+    print(os.path.isfile(__name__))
+    print(pkg_resources.resource_filename(__name__, 'data/trimmed_emm_types.tfa'))
+    print(pkg_resources.resource_filename(__name__, 'data/trimmed_emm_types.tfa'))
+    print(os.path.isfile(pkg_resources.resource_filename(__name__, 'data/trimmed_emm_types.tfa')))
+    print(os.path.isfile(os.path.join(pkg_resources.resource_filename(__name__, 'data/trimmed_emm_types.tfa'))))
+    # print(os.path.join(resource_filename(__name__,), 'data', 'trimmed_emm_types.tfa'))
+    # print(os.path.isfile(os.path.join(resource_filename(__name__,), 'data', 'trimmed_emm_types.tfa')))
+    print(args.db)
+    print(os.listdir(os.path.join(pkg_resources.resource_filename(__name__, 'data/'))))
+    print(os.listdir(pkg_resources.resource_filename(__name__, 'data/')))
+    # print(os.path.abspath(os.path.join(resource_filename(__name__,), 'data', 'trimmed_emm_types.tfa')))
+    print(os.path.realpath(__file__))
+    print(os.path.abspath(__file__))
+    print(sys.argv[0])
+    print(os.path.abspath(sys.argv[0]))
+    print(os.path.realpath(sys.argv[0]))
 
     return args
 
@@ -78,54 +128,6 @@ def choose_best_match(lines):
 
 def main():
     args = emm_argument_parser()
-
-    args.fasta = [os.path.abspath(fasta.name) for fasta in args.fasta]
-
-    args.outdir = os.path.abspath(args.outdir)
-    if not os.path.isdir(args.outdir):
-        os.makedirs(args.outdir)
-
-    # Create DB symbolic link to outdir (avoid permission problems)
-    print('==>', args.db)
-    if args.db is not None:
-        args.db = os.path.abspath(args.db)
-        if not os.path.isfile(args.db):
-            sys.exit('Blast DB was not found')
-        files = [f for f in os.listdir(os.path.dirname(args.db)) if
-                 not f.startswith('.') and os.path.isfile(os.path.join(os.path.dirname(args.db), f)) and
-                 f.startswith(os.path.basename(args.db))]
-        for file_found in files:
-            if os.path.islink(os.path.join(args.outdir, file_found)):
-                os.remove(os.path.join(args.outdir, file_found))
-            os.symlink(os.path.join(os.path.dirname(args.db), file_found),
-                       os.path.join(args.outdir, file_found))
-    else:
-        args.db = pkg_resources.resource_filename(__name__, os.path.join('data', 'trimmed_emm_types.tfa'))
-        print('==>', args.db,
-              os.path.isfile(args.db),
-              # pkg_resources.resource_filename(__name__, os.path.join('data', '')),
-              pkg_resources.resource_isdir(__name__, os.path.join('data', '')),
-              pkg_resources.resource_listdir(__name__, os.path.join('data', '')),
-              pkg_resources.resource_listdir(__name__, 'data/'),
-              pkg_resources.resource_exists(__name__, os.path.join('data', '')))
-
-        files = [f for f in pkg_resources.resource_listdir(__name__, os.path.join('data', '')) if
-                 not f.startswith('.') and
-                 pkg_resources.resource_exists(__name__, os.path.join('data', f)) and
-                 f.startswith(os.path.basename(args.db))]
-        for file_found in files:
-            if os.path.islink(os.path.join(args.outdir, file_found)):
-                os.remove(os.path.join(args.outdir, file_found))
-            os.symlink(os.path.abspath(pkg_resources.resource_filename(__name__, os.path.join('data', file_found))),
-                       os.path.join(args.outdir, file_found))
-            print('==>', file_found, '\n',
-                  os.path.abspath(pkg_resources.resource_filename(__name__, os.path.join('data', file_found))), '\n',
-                  os.path.isfile(os.path.abspath(pkg_resources.resource_filename(__name__, os.path.join('data', file_found)))), '\n',
-                  os.path.join(args.outdir, file_found), '\n',
-                  os.path.isfile(os.path.join(args.outdir, file_found)), '\n',
-                  os.path.islink(os.path.join(args.outdir, file_found)))
-        args.db = os.path.join(args.outdir, 'trimmed_emm_types.tfa')
-        print('==>', args.db)
 
     # Test isolate names
     for fasta in args.fasta:
