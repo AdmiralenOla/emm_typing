@@ -1,4 +1,4 @@
-#!/usr/bin/env python3 -W ignore
+#!/usr/bin/env python3
 
 import os
 import sys
@@ -103,7 +103,9 @@ def main():
         args.db = pkg_resources.resource_filename(__name__, os.path.join('data', 'trimmed_emm_types.tfa'))
         print('==>', args.db,
               os.path.isfile(args.db),
-              pkg_resources.resource_listdir(__name__, os.path.join('data', '')))
+              pkg_resources.resource_filename(__name__, os.path.join('data', '')),
+              pkg_resources.resource_listdir(__name__, os.path.join('data', '')),
+              pkg_resources.resource_listdir(__name__, 'data/'))
 
         files = [f for f in pkg_resources.resource_listdir(__name__, os.path.join('data', '')) if
                  not f.startswith('.') and
