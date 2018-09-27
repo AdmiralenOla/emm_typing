@@ -101,6 +101,10 @@ def main():
                        os.path.join(args.outdir, file_found))
     else:
         args.db = pkg_resources.resource_filename(__name__, os.path.join('data', 'trimmed_emm_types.tfa'))
+        print('==>', args.db,
+              os.path.isfile(args.db),
+              pkg_resources.resource_listdir(__name__, os.path.join('data', '')))
+
         files = [f for f in pkg_resources.resource_listdir(__name__, os.path.join('data', '')) if
                  not f.startswith('.') and
                  pkg_resources.resource_exists(__name__, os.path.join('data', f)) and
@@ -117,6 +121,7 @@ def main():
                   os.path.isfile(os.path.join(args.outdir, file_found)), '\n',
                   os.path.islink(os.path.join(args.outdir, file_found)))
         args.db = os.path.join(args.outdir, 'trimmed_emm_types.tfa')
+        print('==>', args.db)
 
     # Test isolate names
     for fasta in args.fasta:
