@@ -65,10 +65,12 @@ def choose_best_match(lines):
             if pident == 100 and length >= 180:
                 matches.append([contig, allele, pident, length])
 
-    if len(matches) > 0 or len(unvalmatches) > 0:
-        return matches, unvalmatches
-    else:
-        return None, None
+    if len(matches) == 0:
+        matches = None
+    if len(unvalmatches) == 0:
+        unvalmatches = None
+
+    return matches, unvalmatches
 
 
 def main():
