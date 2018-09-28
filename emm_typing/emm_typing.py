@@ -160,7 +160,7 @@ def main():
                 if matches is not None:
                     matches = matches[0]
                 else:
-                    matches = []
+                    matches = ['', '', '', '']
 
                 communal.writerow([isolatename] + matches + unvalidatedmatches)
 
